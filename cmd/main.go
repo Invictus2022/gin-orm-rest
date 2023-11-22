@@ -16,7 +16,7 @@ func main() {
 	router.GET("/:id", controller.GetPosts)
 	router.GET("/my-id", controller.GetPost)
 	router.DELETE("/:id", controller.DelPost)
-	router.PUT("/")
+	router.PUT("/:id", controller.UpdatePost)
 
 	if err := router.Run(":5000"); err != nil {
 		panic(err.Error())

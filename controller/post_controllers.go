@@ -134,6 +134,56 @@ func DelPost(c *gin.Context) {
 // Update Post
 
 func UpdatePost(c *gin.Context) {
+
+	// Get the ID parameter from the request URL.
 	idstr := c.Param("id")
 
+	// Convert the ID string to an integer.
+	id, err := strconv.Atoi(idstr)
+
+	if err != nil {
+		// If there is an error converting the ID, return a bad request response.
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid ID",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Check if the post with the specified ID exists.
+	row := dbclient.DBClient.QueryRow("SELECT id, title, content, created_at FROM students WHERE id=$1;", id)
+
+	var existingPost prac.Post
+
+	// Attempt to populate the existing post with data from the retrieved row.
+	if err := row.Scan(&existingPost.ID, &existingPost.Title, &existingPost.Content, &existingPost.CreatedAt); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   "Post not found",
+			"message": err.Error(),
+		})
+		return
+	}
+	// Bind the request JSON to a new post object.
+	var updatedPost prac.Post
+	if err := c.ShouldBindJSON(&updatedPost); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": "Invalid request body",
+		})
+		return
+	}
+
+	// Execute the UPDATE query to update the post with the specified ID.
+	_, err = dbclient.DBClient.Exec("UPDATE students SET title=$1, content=$2 WHERE id=$3;",
+		updatedPost.Title, updatedPost.Content, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Error updating post",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Return the updated post as a JSON response.
+	c.JSON(http.StatusOK, updatedPost)
 }
