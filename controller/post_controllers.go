@@ -153,6 +153,7 @@ func UpdatePost(c *gin.Context) {
 	// Check if the post with the specified ID exists.
 	row := dbclient.DBClient.QueryRow("SELECT id, title, content, created_at FROM students WHERE id=$1;", id)
 
+	// Make a var existingPost with type prac.Post struct. It will temporarly store the retrieved row from db.
 	var existingPost prac.Post
 
 	// Attempt to populate the existing post with data from the retrieved row.
